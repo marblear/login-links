@@ -111,7 +111,7 @@ Call on both server and client
 
 ```javascript
 // on server
-LoginLinks.generateAccessToken(user, {expiresInSeconds: 10 * 60}); // ten minutes
+LoginLinks.generateAccessToken(user, {expirationInSeconds: 10 * 60}); // ten minutes
 ```
 
 ### generateAccessToken
