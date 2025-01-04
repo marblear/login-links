@@ -1,6 +1,6 @@
 Meteor.users._ensureIndex(
-  {'services.accessTokens.tokens.hashedToken': 1},
-  {name: 'login-links:services.accessTokens'})
+  { 'services.accessTokens.tokens.hashedToken': 1 },
+  { name: 'login-links:services.accessTokens' });
 
 
 _.extend(LoginLinks, {
@@ -10,35 +10,35 @@ _.extend(LoginLinks, {
    * @param {string|object} user
    * @param {object} opts - `{type: String}` or `{expirationInSeconds: Integer}`. Any additional fields in `opts` will be copied to the stored token that is provided to any hooks.
    */
-  generateAccessToken(user, opts) {
+  async generateAccessToken(user, opts) {
     let stampedToken,
-        hashStampedToken,
-        update
+      hashStampedToken,
+      update;
 
-    check(user, Match.OneOf(String, Object), '`user` must be a string or basic object')
-    check(opts, Match.Optional(Object))
+    check(user, Match.OneOf(String, Object), '`user` must be a string or basic object');
+    check(opts, Match.Optional(Object));
 
     if ('string' === typeof user) {
-      user = {_id: user}
+      user = { _id: user };
     } else if ('object' !== typeof user) {
-      throw new Error ("login-links error: invalid user argument")
+      throw new Error('login-links error: invalid user argument');
     }
 
-    stampedToken = Accounts._generateStampedLoginToken()
-    hashStampedToken = Accounts._hashStampedToken(stampedToken)
+    stampedToken = Accounts._generateStampedLoginToken();
+    hashStampedToken = Accounts._hashStampedToken(stampedToken);
 
     if (opts)
-      _.extend(hashStampedToken, opts)
+      _.extend(hashStampedToken, opts);
 
-    Meteor.users.update(user._id, {
+    await Meteor.users.updateAsync(user._id, {
       $push: {
         'services.accessTokens.tokens': hashStampedToken
       }
-    })
+    });
 
     //console.log({hashStampedToken})
 
-    return stampedToken.token
+    return stampedToken.token;
   }, // end generateAccessToken
 
   /**
@@ -54,7 +54,7 @@ _.extend(LoginLinks, {
    * @param {loginHook} hook
    */
   onTokenLogin(hook) {
-    this._tokenLoginHooks.push(hook)
+    this._tokenLoginHooks.push(hook);
   },
 
   _connectionHooks: [],
@@ -64,35 +64,35 @@ _.extend(LoginLinks, {
    * @param {loginHook} hook
    */
   onConnectionLogin(hook) {
-    this._connectionHooks.push(hook)
+    this._connectionHooks.push(hook);
   },
 
-  _lookupToken(token) {
-    check(token, String)
+  async _lookupToken(token) {
+    check(token, String);
 
-    let hashedToken = Accounts._hashLoginToken(token)
+    let hashedToken = Accounts._hashLoginToken(token);
 
     // $elemMatch projection doens't work on nested fields
-    fields = {
+    const fields = {
       _id: 1,
       'services.accessTokens.tokens': 1
-    }
+    };
 
-    user = Meteor.users.findOne({
+    const user = await Meteor.users.findOneAsync({
       'services.accessTokens.tokens.hashedToken': hashedToken
-    }, {fields})
+    }, { fields });
 
     if (!user)
-      throw new Meteor.Error('login-links/token-not-found')
+      throw new Meteor.Error('login-links/token-not-found');
 
-    let savedToken = _.findWhere(user.services.accessTokens.tokens, {hashedToken})
-    let accessToken = new LoginLinks.AccessToken(savedToken)
+    let savedToken = _.findWhere(user.services.accessTokens.tokens, { hashedToken });
+    let accessToken = new LoginLinks.AccessToken(savedToken);
 
     if (accessToken.isExpired)
       throw new Meteor.Error('login-links/token-expired',
-                             accessToken.expirationReason)
+        accessToken.expirationReason);
 
-    return {user, savedToken}
+    return { user, savedToken };
   } // end _lookupToken
 
-}) // end _.extend(LoginLinks, ...)
+}); // end _.extend(LoginLinks, ...)

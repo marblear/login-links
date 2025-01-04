@@ -1,13 +1,13 @@
-Accounts.registerLoginHandler(function (loginRequest) {
-  let token = loginRequest['login-links/accessToken']
+Accounts.registerLoginHandler(async function(loginRequest) {
+  let token = loginRequest['login-links/accessToken'];
 
   if (!token)
-    return undefined // don't handle
+    return undefined; // don't handle
 
-  let {user, savedToken} = LoginLinks._lookupToken(token)
+  let { user, savedToken } = await LoginLinks._lookupToken(token);
 
   for (let hook of LoginLinks._tokenLoginHooks)
-    hook(savedToken, user)
+    await hook(savedToken, user);
 
-  return {userId: user._id}
-})
+  return { userId: user._id };
+});
