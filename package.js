@@ -1,12 +1,12 @@
 Package.describe({
   name: 'loren:login-links',
-  version: '0.1.3_1',
+  version: '0.1.3_2',
   summary: 'Send links that automatically login the user with OTPs (one-time passwords)',
   git: 'https://github.com/lorensr/login-links.git'
 });
 
 Package.onUse(function(api) {
-  api.versionsFrom(['1.3.3.1', '2.3']);
+  api.versionsFrom(['1.3.3.1', '2.3', '3.0']);
   api.use(['ecmascript',
            'underscore',
            'accounts-base',
