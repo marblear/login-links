@@ -1,4 +1,4 @@
-Meteor.users.createIndex(
+void Meteor.users.createIndexAsync(
   { 'services.accessTokens.tokens.hashedToken': 1 },
   { name: 'login-links:services.accessTokens' });
 
