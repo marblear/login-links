@@ -1,4 +1,4 @@
-Meteor.users._ensureIndex(
+Meteor.users.createIndex(
   { 'services.accessTokens.tokens.hashedToken': 1 },
   { name: 'login-links:services.accessTokens' });
 
