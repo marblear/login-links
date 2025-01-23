@@ -23,8 +23,8 @@ Tinytest.addAsync(
 
 Tinytest.addAsync(
   "login-links - expired token doesn't work",
-  function (test, done) {
-    createUserAndExpiringToken(function(targetId, token) {
+  async function (test, done) {
+    await createUserAndExpiringToken(function(targetId, token) {
       setTimeout(function() {
         LoginLinks.connectionLogin(token, function (e, data) {
           test.equal(e.error, 'login-links/token-expired')
@@ -38,8 +38,8 @@ Tinytest.addAsync(
 
 Tinytest.addAsync(
   "login-links - expired token doesn't reconnect",
-  function (test, done) {
-    createUserAndExpiringToken(function(targetId, token) {
+  async function (test, done) {
+    await createUserAndExpiringToken(function(targetId, token) {
       LoginLinks.connectionLogin(token, function (e, data) {
         setTimeout(function(){
           // after reconnect, should be logged out
@@ -72,8 +72,8 @@ Tinytest.addAsync(
 
 Tinytest.addAsync(
   'login-links - connectionLogin logs out on logout',
-  function (test, done) {
-    createUserAndToken(function(targetId, token) {
+  async function (test, done) {
+    await createUserAndToken(function(targetId, token) {
       LoginLinks.connectionLogin(token, function (e, {userId}) {
         Meteor.logout(function (e) {
           test.isUndefined(e)
@@ -93,8 +93,8 @@ Tinytest.addAsync(
 
 Tinytest.addAsync(
   'login-links - connectionLogin works',
-  function (test, done) {
-    createUserAndToken(function(targetId, token) {
+  async function (test, done) {
+    await createUserAndToken(function(targetId, token) {
       test.isNull(Meteor.userId())
 
       LoginLinks.connectionLogin(token, function (e, {userId}) {

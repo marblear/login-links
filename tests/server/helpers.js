@@ -1,7 +1,7 @@
 Meteor.methods({
 
-  cleardb() {
-    Meteor.users.remove({})
+  async cleardb() {
+    await Meteor.users.removeAsync({})
   },
 
   whoami() {
@@ -9,9 +9,9 @@ Meteor.methods({
     return Meteor.userId()
   },
 
-  generateToken(userId, opts) {
+  async generateToken(userId, opts) {
     // l('generateToken', {userId, opts})
-    return LoginLinks.generateAccessToken(userId, opts)
+    return await LoginLinks.generateAccessToken(userId, opts)
   }
 
 })

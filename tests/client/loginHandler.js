@@ -1,7 +1,7 @@
 Tinytest.addAsync(
   'login-links - loginWithToken works',
-  function (test, done) {
-    createUserAndToken(function(targetId, token) {
+  async function (test, done) {
+    await createUserAndToken(function(targetId, token) {
       test.isNull(Meteor.userId())
 
       LoginLinks.loginWithToken(token, function (e) {
@@ -41,8 +41,8 @@ Tinytest.addAsync(
 
 Tinytest.addAsync(
   'login-links - per-token expiration works',
-  (test, done) => {
-    createUserAndExpiringToken(function(targetId, token) {
+  async (test, done) => {
+    await createUserAndExpiringToken(function(targetId, token) {
       test.isNull(Meteor.userId())
       setTimeout(() => {
         LoginLinks.loginWithToken(token, function (e) {
