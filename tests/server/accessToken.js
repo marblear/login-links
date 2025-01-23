@@ -36,21 +36,21 @@ Tinytest.add(
 // TODO this one is flaky, should succeed after hitting rerun button
 Tinytest.addAsync(
   'login-links - old tokens are cleared',
-  function (test, done) {
+  async function (test, done) {
     try {
       Accounts.createUser({email: 'a@b', password: 'a'})
     } catch(e) { }
 
-    let user = Meteor.users.findOne()
-    LoginLinks.generateAccessToken(user._id, {expirationInSeconds: 0})
-    Meteor.setTimeout(function() {
-      LoginLinks._expireTokens()
-      Meteor.setTimeout(function(){
+    let user = await Meteor.users.findOneAsync()
+    await LoginLinks.generateAccessToken(user._id, {expirationInSeconds: 0})
+    Meteor.setTimeout(async function() {
+      await LoginLinks._expireTokens()
+      Meteor.setTimeout(async function(){
         console.log('user.services', user.services)
         console.log('user', user)
-        console.log('Meteor.users.findOne(user._id)', Meteor.users.findOne(user._id))
+        console.log('Meteor.users.findOne(user._id)', await Meteor.users.findOneAsync(user._id))
         let beforeCount = user.services.accessTokens ? user.services.accessTokens.tokens.length : 0
-        const afterUser = Meteor.users.findOne(user._id)
+        const afterUser = await Meteor.users.findOneAsync(user._id)
         let afterCount = afterUser.services.accessTokens.tokens.length
         test.equal(beforeCount, afterCount) // one added, one cleaned up
         done()
