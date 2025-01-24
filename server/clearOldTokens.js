@@ -1,5 +1,5 @@
 LoginLinks._expireTokens = async function() {
-  const users = Meteor.users.find({
+  const users = await Meteor.users.find({
     'services.accessTokens.tokens': {
       $exists: true,
       $ne: []
