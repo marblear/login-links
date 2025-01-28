@@ -10,9 +10,12 @@ let _createUserAndToken = async function(opts, cb) {
   }, function(){
     let userId = Meteor.userId()
     Meteor.logout(async function() {
-      await Meteor.callAsync('generateToken', userId, opts, function(e, token) {
+      try {
+        const token = await Meteor.callAsync('generateToken', userId, opts);
         cb(userId, token)
-      })
+      } catch (e) {
+        console.log(e)
+      }
     })
   })
 }
