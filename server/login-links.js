@@ -1,3 +1,4 @@
+/* global Meteor, Accounts, LoginLinks, _, check, Match */
 void Meteor.users.createIndexAsync(
   { 'services.accessTokens.tokens.hashedToken': 1 },
   { name: 'login-links:services.accessTokens' });
@@ -11,9 +12,16 @@ _.extend(LoginLinks, {
    * @param {object} opts - `{type: String}` or `{expirationInSeconds: Integer}`. Any additional fields in `opts` will be copied to the stored token that is provided to any hooks.
    */
   async generateAccessToken(user, opts) {
-    let stampedToken,
-      hashStampedToken,
-      update;
+    const traceStarted = Date.now();
+    const trace = phase => {
+      if (!Meteor.settings.private?.debug?.traceAuth) return;
+      console.info('[native-auth]', JSON.stringify({
+        time: new Date().toISOString(), pid: process.pid,
+        method: 'login-links:generateAccessToken', phase,
+        elapsedMs: Date.now() - traceStarted
+      }));
+    };
+
 
     check(user, Match.OneOf(String, Object), '`user` must be a string or basic object');
     check(opts, Match.Optional(Object));
@@ -24,19 +32,24 @@ _.extend(LoginLinks, {
       throw new Error('login-links error: invalid user argument');
     }
 
-    stampedToken = Accounts._generateStampedLoginToken();
-    hashStampedToken = Accounts._hashStampedToken(stampedToken);
+    trace('token-generate-start');
+    const stampedToken = Accounts._generateStampedLoginToken();
+    trace('token-generate-end');
+    trace('token-hash-start');
+    const hashStampedToken = Accounts._hashStampedToken(stampedToken);
+    trace('token-hash-end');
 
     if (opts)
       _.extend(hashStampedToken, opts);
 
+    trace('token-db-update-start');
     await Meteor.users.updateAsync(user._id, {
       $push: {
         'services.accessTokens.tokens': hashStampedToken
       }
     });
 
-    //console.log({hashStampedToken})
+    trace('token-db-update-end');
 
     return stampedToken.token;
   }, // end generateAccessToken
@@ -70,7 +83,7 @@ _.extend(LoginLinks, {
   async _lookupToken(token) {
     check(token, String);
 
-    let hashedToken = Accounts._hashLoginToken(token);
+    const hashedToken = Accounts._hashLoginToken(token);
 
     // $elemMatch projection doens't work on nested fields
     const fields = {
@@ -85,8 +98,8 @@ _.extend(LoginLinks, {
     if (!user)
       throw new Meteor.Error('login-links/token-not-found');
 
-    let savedToken = _.findWhere(user.services.accessTokens.tokens, { hashedToken });
-    let accessToken = new LoginLinks.AccessToken(savedToken);
+    const savedToken = _.findWhere(user.services.accessTokens.tokens, { hashedToken });
+    const accessToken = new LoginLinks.AccessToken(savedToken);
 
     if (accessToken.isExpired)
       throw new Meteor.Error('login-links/token-expired',
